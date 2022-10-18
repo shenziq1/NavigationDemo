@@ -1,12 +1,10 @@
 package com.github.shenziq1.navigation
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -15,8 +13,8 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -38,125 +36,168 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
 
-@Composable
-fun Alpha() {
-    val alphaNaviController = rememberNavController()
-    val backStackEntry by alphaNaviController.currentBackStackEntryAsState()
-    val currentScreen = backStackEntry?.destination?.route ?: "alphaStart"
 
-    Scaffold(
-        topBar = {
-            TopAppBar() {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(
-                        onClick = { alphaNaviController.navigate("alphaStart") }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "navigation back"
-                        )
-                    }
-                    Text(text = "name")
-                    IconButton(
-                        onClick = {}
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = "navigation back"
-                        )
-                    }
-                }
-            }
-        },
-    ) {
-        NavHost(navController = alphaNaviController, startDestination = currentScreen) {
-            composable("alphaStart") {
-                AlphaStart(onAlphaStartClicked = {
-                    alphaNaviController.navigate("alphaInner") {
-                    }
-                })
-            }
-            composable("alphaInner") {
-                AlphaInner()
-            }
-        }
-    }
+    @Composable
+    fun Alpha(mainNavHostController: NavHostController) {
+        val alphaNaviController = rememberNavController()
+        Log.d("TestAlpha", alphaNaviController.toString())
+        val backStackEntry by alphaNaviController.currentBackStackEntryAsState()
+        val currentScreen = backStackEntry?.destination?.route ?: "alphaStart"
+        Log.d("TestAlpha", backStackEntry?.destination?.route ?: "null")
 
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun AlphaStart(onAlphaStartClicked: () -> Unit) {
-    Card(onClick = onAlphaStartClicked) {
-        Text(text = "alpha start")
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun AlphaInner() {
-    Card(onClick = {}) {
-        Text(text = "inside alpha")
-    }
-}
-
-@Composable
-fun Beta() {
-    Text(text = "Beta", fontSize = 40.sp)
-}
-
-@Composable
-fun Charlie() {
-    Text(text = "Charlie", fontSize = 40.sp)
-}
-
-@Composable
-fun App() {
-    val navController = rememberNavController()
-    var selectedItem by remember { mutableStateOf(0) }
-    val items = listOf("Songs", "Artists", "Playlists")
-//
-    Scaffold(
-        bottomBar = {
-            BottomNavigation {
-                items.forEachIndexed { index, item ->
-                    BottomNavigationItem(
-                        icon = { Icon(Icons.Filled.Favorite, contentDescription = null) },
-                        label = { Text(item) },
-                        selected = selectedItem == index,
-                        onClick = {
-                            selectedItem = index
-                            navController.navigate(item)
+        Scaffold() {
+            NavHost(navController = alphaNaviController, startDestination = "alphaStart") {
+                composable("alphaStart") {
+                    AlphaStart(onAlphaStartClicked = {
+                        alphaNaviController.navigate("alphaInner") {
+                            launchSingleTop = true
                         }
-                    )
+                    }, mainNavHostController)
                 }
-            }
-        }) {
-        NavHost(navController = navController, startDestination = "Songs") {
-            composable(route = "Songs") {
-                Alpha()
-            }
-            composable(route = "Artists") {
-                Beta()
-            }
-            composable(route = "Playlists") {
-                Charlie()
+                composable("alphaInner") {
+                    AlphaInner(onAlphaBackClicked = {
+                        alphaNaviController.navigate("alphaStart") {
+                            launchSingleTop = true
+                        }
+                    })
+                }
             }
         }
     }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    NavigationTheme {
-        App()
+    @OptIn(ExperimentalMaterialApi::class)
+    @Composable
+    fun AlphaStart(onAlphaStartClicked: () -> Unit, mainNavHostController: NavHostController) {
+        Scaffold(
+            topBar = {
+                TopAppBar() {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "title")
+                    }
+                }
+            },
+            bottomBar = {
+                MainBottomNavigation(navController = mainNavHostController)
+            }
+        ) {
+            Card(onClick = onAlphaStartClicked) {
+                Text(text = "alpha start")
+            }
+        }
+
+    }
+
+    @OptIn(ExperimentalMaterialApi::class)
+    @Composable
+    fun AlphaInner(onAlphaBackClicked: () -> Unit) {
+        Scaffold(
+            topBar = {
+                TopAppBar() {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = onAlphaBackClicked
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowBack,
+                                contentDescription = "navigation back"
+                            )
+                        }
+                        Text(text = "name")
+                        IconButton(
+                            onClick = {}
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = "navigation back"
+                            )
+                        }
+                    }
+                }
+            },
+
+            ) {
+            Card(onClick = {}) {
+                Text(text = "inside alpha")
+            }
+        }
+    }
+
+    @Composable
+    fun Beta(mainNavHostController: NavHostController) {
+        Scaffold(
+            bottomBar = { MainBottomNavigation(navController = mainNavHostController) }) {
+            Text(text = "Beta", fontSize = 40.sp)
+        }
+
+    }
+
+    @Composable
+    fun Charlie(mainNavHostController: NavHostController) {
+        Scaffold(
+            bottomBar = { MainBottomNavigation(navController = mainNavHostController) }) {
+            Text(text = "Charlie", fontSize = 40.sp)
+        }
+    }
+
+    @Composable
+    fun MainBottomNavigation(navController: NavHostController) {
+        var selectedItem by remember { mutableStateOf(0) }
+        val items = listOf("Songs", "Artists", "Playlists")
+        BottomNavigation {
+            items.forEachIndexed { index, item ->
+                BottomNavigationItem(
+                    icon = { Icon(Icons.Filled.Favorite, contentDescription = null) },
+                    label = { Text(item) },
+                    selected = selectedItem == index,
+                    onClick = {
+                        selectedItem = index
+                        navController.navigate(item) {
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun App() {
+        val navController = rememberNavController()
+
+        Scaffold(
+        ) {
+            NavHost(navController = navController, startDestination = "Songs") {
+                composable(route = "Songs") {
+                    Alpha(navController)
+                }
+                composable(route = "Artists") {
+                    Beta(navController)
+                }
+                composable(route = "Playlists") {
+                    Charlie(navController)
+                }
+            }
+        }
+    }
+
+
+    //@Preview(showBackground = true)
+    @Composable
+    fun DefaultPreview() {
+        NavigationTheme {
+            App()
+        }
     }
 }
