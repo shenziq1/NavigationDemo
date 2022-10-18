@@ -61,18 +61,7 @@ fun App(){
     var selectedItem by remember { mutableStateOf(0) }
     val items = listOf("Songs", "Artists", "Playlists")
 //
-    Column(Modifier.fillMaxSize()) {
-        NavHost(navController = navController, startDestination = "Songs"){
-            composable(route = "Songs") {
-                Alpha()
-            }
-            composable(route = "Artists") {
-                Beta()
-            }
-            composable(route = "Playlists") {
-                Charlie()
-            }
-        }
+    Scaffold(bottomBar = {
         BottomNavigation {
             items.forEachIndexed { index, item ->
                 BottomNavigationItem(
@@ -86,8 +75,21 @@ fun App(){
                 )
             }
         }
+    }) {
+        NavHost(navController = navController, startDestination = "Artists"){
+            composable(route = "Songs") {
+                Alpha()
+            }
+            composable(route = "Artists") {
+                Beta()
+            }
+            composable(route = "Playlists") {
+                Charlie()
+            }
+        }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
